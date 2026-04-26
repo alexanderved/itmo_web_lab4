@@ -13,7 +13,6 @@ import web.db.dto.UserDTO;
 import web.domain.Token;
 import web.domain.TokenPair;
 import web.exceptions.MalformedTokenException;
-import web.exceptions.UserNotFoundException;
 
 import javax.crypto.SecretKey;
 import java.time.Duration;

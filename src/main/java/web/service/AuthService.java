@@ -12,8 +12,6 @@ import web.exceptions.UserNotFoundException;
 import web.utils.Hasher;
 import web.utils.SaltGenerator;
 
-import java.util.List;
-
 @Stateful(name = "authService")
 public class AuthService {
     @EJB

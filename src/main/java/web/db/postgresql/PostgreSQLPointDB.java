@@ -17,8 +17,6 @@ import web.domain.Token;
 import web.exceptions.UserNotFoundException;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @Singleton(name = "pointDB")
@@ -73,21 +71,15 @@ public class PostgreSQLPointDB implements PointDB {
 
     @Override
     public List<Point> getPoints(Token t) {
-        try {
-            UserDTO user = userDB.find(t.getUsername());
+        return hibernateCfg.getSessionFactory().fromTransaction(session -> {
+            String hql = "SELECT p FROM PointDTO p ORDER BY p.id DESC";
+            TypedQuery<PointDTO> query = session.createQuery(hql, PointDTO.class);
 
-            return hibernateCfg.getSessionFactory().fromTransaction(session -> {
-                String hql = "SELECT p FROM PointDTO p ORDER BY p.id DESC";
-                TypedQuery<PointDTO> query = session.createQuery(hql, PointDTO.class);
-
-                return new ArrayList<>(query.getResultList()
-                        .stream()
-                        .map(PointDTO::toDomain)
-                        .toList());
-            });
-        } catch (UserNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+            return new ArrayList<>(query.getResultList()
+                    .stream()
+                    .map(PointDTO::toDomain)
+                    .toList());
+        });
     }
 
     @Override

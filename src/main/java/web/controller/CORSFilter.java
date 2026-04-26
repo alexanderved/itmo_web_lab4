@@ -2,7 +2,6 @@ package web.controller;
 
 import java.io.IOException;
 
-import jakarta.servlet.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;

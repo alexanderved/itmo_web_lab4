@@ -50,8 +50,6 @@ public class PointChecker {
     private static boolean isInTriangle(UncheckedPoint p) {
         return Arrays.stream(p.rs())
                 .map((r) -> {
-                    BigDecimal halfR = r.multiply(BigDecimal.valueOf(0.5));
-
                     if (r.compareTo(BigDecimal.ZERO) >= 0) {
                         return (p.x().compareTo(BigDecimal.ZERO) <= 0
                                 && p.y().compareTo(BigDecimal.ZERO) <= 0
