@@ -33,22 +33,16 @@ public class JWTAuthMechanism implements HttpAuthenticationMechanism {
         System.out.println("--------- START AUTH");
 
         if (!context.isProtected()) {
-            System.out.println("--------- NOT PROTECTED");
-
             return context.doNothing();
         }
 
         if (request.getMethod().equals("OPTIONS")) {
-            System.out.println("--------- OPTIONS");
-
             return context.doNothing();
         }
 
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         System.out.println(authorizationHeader);
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
-            System.out.println("------------ NO HEADER");
-
             addCORS(response);
             return context.responseUnauthorized();
         }
@@ -60,20 +54,14 @@ public class JWTAuthMechanism implements HttpAuthenticationMechanism {
         try {
             user = userDB.find(token.getUsername());
         } catch (UserNotFoundException e) {
-            System.out.println("------------ USER NOT FOUND");
-
             addCORS(response);
             return context.responseUnauthorized();
         }
 
         if (!tokenService.isAccessTokenValid(token, user)) {
-            System.out.println("------------ TOKEN EXPIRED");
-
             addCORS(response);
             return context.responseUnauthorized();
         }
-
-        System.out.println("--------- AUTH");
 
         return context.notifyContainerAboutLogin(user.getUsername(), Set.of("user"));
     }
