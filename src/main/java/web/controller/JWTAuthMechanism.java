@@ -30,8 +30,6 @@ public class JWTAuthMechanism implements HttpAuthenticationMechanism {
                                                 HttpServletResponse response,
                                                 HttpMessageContext context)
             throws AuthenticationException {
-        System.out.println("--------- START AUTH");
-
         if (!context.isProtected()) {
             return context.doNothing();
         }
@@ -41,7 +39,6 @@ public class JWTAuthMechanism implements HttpAuthenticationMechanism {
         }
 
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        System.out.println(authorizationHeader);
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
             addCORS(response);
             return context.responseUnauthorized();
