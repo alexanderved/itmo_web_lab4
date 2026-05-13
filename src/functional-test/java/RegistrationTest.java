@@ -24,7 +24,7 @@ public class RegistrationTest {
         String loginAddr = clientAddr + "login";
         String newUsername = "testuser-" + generateRandomString();
 
-        register(driver, newUsername, "password", "password");
+        register(driver, newUsername, "password1", "password1");
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         wait.until(d -> d.getCurrentUrl().equals(loginAddr));
@@ -35,7 +35,7 @@ public class RegistrationTest {
         String newUsername = "testuser0";
         String errorMsg = "Пароль и повторный пароль не совпадают";
 
-        register(driver, newUsername, "password", "other-password");
+        register(driver, newUsername, "password1", "other-password1");
         waitError(driver, errorMsg);
     }
 
@@ -44,7 +44,7 @@ public class RegistrationTest {
         String newUsername = "testuser1";
         String errorMsg = String.format("Не удалось зарегистрировать нового пользователя: Имя пользователя '%s' занято", newUsername);
 
-        register(driver, newUsername, "password", "password");
+        register(driver, newUsername, "other-password1", "other-password1");
         waitError(driver, errorMsg);
     }
 
