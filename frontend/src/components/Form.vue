@@ -27,6 +27,7 @@
 
 <script>
 import { drawPoints, setRValues } from '@/utils/canvas';
+import { drawWebGLCanvas } from '@/utils/canvas3d';
 import CheckboxGrid from './CheckboxGrid.vue'
 import { storePoints } from '@/utils/points';
 import { logOut } from '@/utils/auth';
@@ -89,6 +90,7 @@ export default {
                     const points = await storePoints(upoints);
                     this.$emit('addPointsToTable', points);
                     drawPoints(points);
+                    drawWebGLCanvas();
                 } catch (e) {
                     logOut();
                 }

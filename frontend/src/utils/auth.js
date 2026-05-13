@@ -93,8 +93,12 @@ export const registration = async (userInfo) => {
     const res = await request("/auth/registration/", "POST",
         { "Content-Type": "application/json" }, JSON.stringify(userInfo));
 
+    if (res.status === 500) {
+        throw new Error(await res.text());
+    }
+
     if (!res.ok) {
-        throw new Error(response.statusText);
+        throw new Error(res.statusText);
     }
 };
 
@@ -102,8 +106,12 @@ export const login = async (userInfo) => {
     const res = await request("/auth/login/", "POST",
         { "Content-Type": "application/json" }, JSON.stringify(userInfo));
 
+    if (res.status === 500) {
+        throw new Error(await res.text());
+    }
+
     if (!res.ok) {
-        throw new Error(response.statusText);
+        throw new Error(res.statusText);
     }
 
     const tokenInfo = TokenInfo.fromData(await res.json());

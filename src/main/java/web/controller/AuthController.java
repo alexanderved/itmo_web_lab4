@@ -29,7 +29,7 @@ public class AuthController {
         try {
             authService.register(userInfo.getUsername(), userInfo.getPassword());
         } catch (UserNameAlreadyTakenException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -47,7 +47,7 @@ public class AuthController {
 
             return new TokenInfo(access, refresh);
         } catch (UserNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -65,7 +65,7 @@ public class AuthController {
 
             return new TokenInfo(access, refresh);
         } catch (InvalidRefreshTokenException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 }

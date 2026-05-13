@@ -1,5 +1,17 @@
-apply plugin: 'java'
-apply plugin: 'war'
+plugins {
+    id 'java'
+    id 'war'
+}
+
+sourceSets {
+    functionalTest {
+        java {
+            srcDir 'src/functional-test/java'
+        }
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
 
 repositories {
     mavenCentral()
@@ -22,4 +34,187 @@ dependencies {
 
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
     compileOnly 'jakarta.ws.rs:jakarta.ws.rs-api:3.0.0'
+
+    testImplementation platform('org.seleniumhq.selenium:selenium-bom:4.35.0')
+    implementation 'org.seleniumhq.selenium:selenium-java:4.21.0'
+    testImplementation 'org.seleniumhq.selenium:selenium-remote-driver'
+    testImplementation 'org.seleniumhq.selenium:selenium-chrome-driver'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.junit.platform:junit-platform-suite:1.12.0'
+    testImplementation 'org.apiguardian:apiguardian-api:1.1.2'
 }
+
+tasks.register('compile') {
+    dependsOn 'compileJava'
+    group = 'Build'
+    description = 'Compiles the source code of the project'
+}
+
+tasks.named('build') {
+    dependsOn = ['compile', 'war']
+    group = 'Build'
+    description = 'Compiles the source code of the project and assembles a war-archive'
+}
+
+tasks.named('clean', Delete) {
+    group = 'Build'
+    description = 'Deletes the compiled files'
+    
+    delete = layout.buildDirectory
+}
+
+tasks.named('test', Test) {
+    dependsOn 'build'
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut"
+    }
+}
+
+tasks.register('functionalTest', Test) {
+    description = 'Runs functional tests'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
+
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching "FunctionalTestSuite"
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut"
+    }
+}
+
+abstract class ScpTask extends DefaultTask {
+    @javax.inject.Inject
+    abstract ExecOperations getExecOps()
+
+    @Input
+    abstract Property<String> getScpDestination()
+
+    @InputFile
+    abstract RegularFileProperty getWarFile()
+
+    @TaskAction
+    void scp() {
+        execOps.exec {
+            commandLine 'scp', warFile.get().asFile.absolutePath, scpDestination.get()
+        }
+
+        println "The war file has been transfered to ${scpDestination.get()}"
+    }
+}
+
+tasks.register('scp', ScpTask) {
+    dependsOn 'build'
+    group = 'Publishing'
+    description = 'Moves the built WAR via SCP to a remote server'
+
+    scpDestination = providers.gradleProperty('scpDestination')
+    warFile = tasks.named("war").flatMap { it.archiveFile }
+}
+
+abstract class TeamTask extends DefaultTask {
+    @javax.inject.Inject
+    abstract ExecOperations getExecOps()
+
+    @javax.inject.Inject
+    abstract ArchiveOperations getArchiveOps()
+
+    @javax.inject.Inject
+    abstract FileSystemOperations getFsOps()
+
+    @OutputDirectory
+    abstract DirectoryProperty getBuildDir()
+
+    @TaskAction
+    void buildRevisions() {
+        def revDir = buildDir.dir('revisions')
+        revDir.get().asFile.mkdirs()
+
+        def tmpRevDir = buildDir.dir('tmp/revisions')
+        tmpRevDir.get().asFile.mkdirs()
+
+        def warFiles = []
+        for (int i = 1; i <= 4; i++) {
+            def commitRef = "HEAD~$i"
+
+            def commitSha = new ByteArrayOutputStream()
+            execOps.exec {
+                commandLine 'git', 'rev-parse', commitRef
+                standardOutput = commitSha
+            }
+
+            commitSha = commitSha.toString().trim()
+            def shortSha = commitSha.take(7)
+
+            def cloneDir = tmpRevDir.get().dir("rev_$shortSha")
+            cloneDir.asFile.mkdirs()
+
+            def sourceArchive = tmpRevDir.get().file('source.zip')
+            execOps.exec {
+                commandLine 'git', 'archive', commitSha, '--format=zip'
+                standardOutput = new FileOutputStream(sourceArchive.asFile.absolutePath)
+            }
+
+            fsOps.copy {
+                from archiveOps.zipTree(sourceArchive)
+                into cloneDir
+            }
+            sourceArchive.asFile.delete()
+
+            execOps.exec {
+                workingDir cloneDir
+                commandLine 'gradle', 'build', '-q'
+            }
+
+            def warFile = cloneDir.file('build/libs/web-lab4.war')
+            if (warFile.asFile.exists()) {
+                def renamedWarFile = cloneDir.file("build/libs/web-lab4-${shortSha}.war")
+                fsOps.copy {
+                    from warFile
+                    into renamedWarFile
+                }
+
+                warFiles << renamedWarFile
+            }
+        }
+
+        def zipFile = buildDir.file('revisions/previous_revisions.zip')
+        ant.zip(destfile: zipFile.get().asFile.absolutePath) {
+            warFiles.each { war ->
+                fileset(file: war.asFile.absolutePath)
+            }
+        }
+    }
+}
+
+tasks.register('team', TeamTask) {
+    group = 'Build'
+    description = 'Clones and builds last 4 commits from Git'
+
+    buildDir = layout.buildDirectory.get()
+}
+
+/* def dockerImageName = 'opi-lab3'
+
+tasks.register('dockerCleanImage', Exec) {
+    description = 'Removes the Docker image'
+    group = 'Docker'
+    
+    commandLine 'docker', 'image', 'rm', dockerImageName
+}
+
+tasks.register('dockerBuildImage', Exec) {
+    description = 'Builds the Docker image'
+    group = 'Docker'
+
+    commandLine 'docker', 'build',
+        '-t', dockerImageName, project.rootDir.absolutePath
+} */

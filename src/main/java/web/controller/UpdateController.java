@@ -25,14 +25,10 @@ public class UpdateController {
     @GET
     public void waitUpdate(@Context HttpHeaders headers,
                            @Suspended AsyncResponse res) {
-        System.out.println("---------- WAIT");
-
         String authorizationHeader = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
             throw new UnauthorizedRequestException();
         }
-
-        System.out.println("---------- WAIT AUTH");
 
         String tokenString = authorizationHeader.split(" ")[1].trim();
         Token token = tokenService.parseTokenString(tokenString);

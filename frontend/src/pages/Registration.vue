@@ -14,7 +14,7 @@
                         type="text"
                         v-model="username"
                         placeholder="Введите имя"
-                        class="form-input"
+                        class="form-input username-input"
                     />
                 </div>
 
@@ -77,7 +77,7 @@
                             :type="showPassword ? 'text' : 'password'"
                             v-model="passwordRepeat"
                             placeholder="Повторите пароль"
-                            class="form-input password-input"
+                            class="form-input password-input password-repeat-input"
                         />
                         <button
                             type="button"
@@ -175,7 +175,7 @@ export default {
                 this.$router.push('/login');
             } catch (e) {
                 const err = document.getElementById("registration-error");
-                err.innerHTML = "Не удалось зарегистрировать нового пользователя"
+                err.innerHTML = "Не удалось зарегистрировать нового пользователя: " + e.message
             }
         },
     }

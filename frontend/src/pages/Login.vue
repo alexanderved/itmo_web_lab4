@@ -14,7 +14,7 @@
                         type="text"
                         v-model="username"
                         placeholder="Введите имя"
-                        class="form-input"
+                        class="form-input login-input"
                     />
                 </div>
 

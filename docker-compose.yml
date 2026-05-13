@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: opi
+    ports:
+      - "5430:5432"
+    command: >
+      postgres -c max_connections=1000
+               -c shared_buffers=256MB
+               -c effective_cache_size=768MB
+               -c maintenance_work_mem=64MB
+               -c checkpoint_completion_target=0.7
+               -c wal_buffers=16MB
+               -c default_statistics_target=100
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 5m
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+
+  server:
+    build: .
+    environment:
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/opi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    healthcheck:
+      test: [ "CMD-SHELL", "netstat -ltn | grep -c \":8080\"" ]
+      interval: 5m
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  client:
+    build: frontend/
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URI: http://server:8080/web-lab4/api
+    depends_on:
+      server:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    shm_size: 2gb
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+    depends_on:
+      - client

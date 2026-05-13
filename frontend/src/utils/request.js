@@ -4,7 +4,7 @@
 import { loadTokens, refresh } from "./auth";
 
 
-const SERVER_API_URI = "http://127.0.0.1:18001/web-lab4/api"
+const SERVER_API_URI = import.meta.env.VITE_API_URI
 
 
 export const request = async (uri, method, headers, body) => {

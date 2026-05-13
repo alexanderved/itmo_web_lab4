@@ -1,6 +1,7 @@
 package web.db.postgresql;
 
 import jakarta.ejb.Singleton;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -16,6 +17,14 @@ public class PostgreSQLHibernateCfg implements HibernateCfg {
 
     public PostgreSQLHibernateCfg() {
         Configuration cfg = new Configuration();
+
+        String psql_url = System.getenv("POSTGRES_URL");
+        String psql_user = System.getenv("POSTGRES_USER");
+        String psql_password = System.getenv("POSTGRES_PASSWORD");
+
+        cfg.setProperty("hibernate.connection.url", psql_url);
+        cfg.setProperty("hibernate.connection.username", psql_user);
+        cfg.setProperty("hibernate.connection.password", psql_password);
 
         cfg.setProperty("hibernate.hibernate.dialect",
                 "org.hibernate.dialect.PostgreSQLDialect");
