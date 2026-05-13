@@ -201,20 +201,3 @@ tasks.register('team', TeamTask) {
 
     buildDir = layout.buildDirectory.get()
 }
-
-/* def dockerImageName = 'opi-lab3'
-
-tasks.register('dockerCleanImage', Exec) {
-    description = 'Removes the Docker image'
-    group = 'Docker'
-    
-    commandLine 'docker', 'image', 'rm', dockerImageName
-}
-
-tasks.register('dockerBuildImage', Exec) {
-    description = 'Builds the Docker image'
-    group = 'Docker'
-
-    commandLine 'docker', 'build',
-        '-t', dockerImageName, project.rootDir.absolutePath
-} */

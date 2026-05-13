@@ -3,6 +3,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.security.SecureRandom;
 import java.time.Duration;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -10,6 +11,43 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class RegistrationTest {
+    WebDriver driver;
+
+    @BeforeEach
+    void initialize() {
+        driver = DriverManager.getDriver();
+    }
+
+    @Test
+    void testRegisterSuccess() {
+        String clientAddr = DriverManager.getClientAddress();
+        String loginAddr = clientAddr + "login";
+        String newUsername = "testuser-" + generateRandomString();
+
+        register(driver, newUsername, "password", "password");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(d -> d.getCurrentUrl().equals(loginAddr));
+    }
+
+    @Test
+    void testRegisterNonrepeatingPassword() {
+        String newUsername = "testuser0";
+        String errorMsg = "Пароль и повторный пароль не совпадают";
+
+        register(driver, newUsername, "password", "other-password");
+        waitError(driver, errorMsg);
+    }
+
+    @Test
+    void testRegisterTakenUsername() {
+        String newUsername = "testuser1";
+        String errorMsg = String.format("Не удалось зарегистрировать нового пользователя: Имя пользователя '%s' занято", newUsername);
+
+        register(driver, newUsername, "password", "password");
+        waitError(driver, errorMsg);
+    }
+
     private String generateRandomString() {
         final String letters = 
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -49,40 +87,5 @@ public class RegistrationTest {
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         wait.until(d -> registrationErrorElem.getText().equals(errorMsg));
-        assertEquals(registrationErrorElem.getText(), errorMsg);
-    }
-
-    @Test
-    void testRegisterSuccess() {
-        WebDriver driver = DriverManager.getDriver();
-        String clientAddr = DriverManager.getClientAddress();
-        String loginAddr = clientAddr + "login";
-        String newUsername = "testuser-" + generateRandomString();
-
-        register(driver, newUsername, "password", "password");
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-        wait.until(d -> d.getCurrentUrl().equals(loginAddr));
-        assertEquals(driver.getCurrentUrl(), loginAddr);
-    }
-
-    @Test
-    void testRegisterNonrepeatingPassword() {
-        WebDriver driver = DriverManager.getDriver();
-        String newUsername = "testuser0";
-        String errorMsg = "Пароль и повторный пароль не совпадают";
-
-        register(driver, newUsername, "password", "other-password");
-        waitError(driver, errorMsg);
-    }
-
-    @Test
-    void testRegisterTakenUsername() {
-        WebDriver driver = DriverManager.getDriver();
-        String newUsername = "testuser1";
-        String errorMsg = String.format("Не удалось зарегистрировать нового пользователя: Имя пользователя '%s' занято", newUsername);
-
-        register(driver, newUsername, "password", "password");
-        waitError(driver, errorMsg);
     }
 }

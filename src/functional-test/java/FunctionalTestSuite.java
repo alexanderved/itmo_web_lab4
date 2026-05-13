@@ -21,6 +21,8 @@ import java.util.Map;
 @SelectClasses({
     LoginTest.class,
     RegistrationTest.class,
+    AddPointsTest.class,
+    ClearPoints.class,
 })
 public class FunctionalTestSuite {
     private static void createUsers() throws IOException, InterruptedException {
@@ -49,8 +51,16 @@ public class FunctionalTestSuite {
         chromePrefs.put("profile.password_manager_enabled", false);
         chromePrefs.put("profile.password_manager_leak_detection", false);
 
-        final ChromeOptions chromeOptions = new ChromeOptions();
+        ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.setExperimentalOption("prefs", chromePrefs);
+
+        chromeOptions.addArguments("--no-sandbox");
+        chromeOptions.addArguments("--disable-dev-shm-usage");
+        
+        chromeOptions.addArguments("--use-gl=angle");
+        chromeOptions.addArguments("--use-angle=swiftshader");
+        chromeOptions.addArguments("--enable-webgl");
+        chromeOptions.addArguments("--ignore-gpu-blocklist");
 
         RemoteWebDriver driver = new RemoteWebDriver(new URL(seleniumUrl), chromeOptions);
         DriverManager.setDriver(driver);
