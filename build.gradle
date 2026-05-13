@@ -18,8 +18,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'jakarta.ejb:jakarta.ejb-api:4.0.0'
-    compileOnly 'jakarta.persistence:jakarta.persistence-api:3.0.0'
+    implementation 'jakarta.ejb:jakarta.ejb-api:4.0.0'
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.0.0'
 
     implementation 'jakarta.enterprise:jakarta.enterprise.cdi-api:4.1.0'
     implementation 'jakarta.security.enterprise:jakarta.security.enterprise-api:3.0.0'
@@ -32,8 +32,8 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
-    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
-    compileOnly 'jakarta.ws.rs:jakarta.ws.rs-api:3.0.0'
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+    implementation 'jakarta.ws.rs:jakarta.ws.rs-api:3.0.0'
 
     testImplementation platform('org.seleniumhq.selenium:selenium-bom:4.35.0')
     implementation 'org.seleniumhq.selenium:selenium-java:4.21.0'
@@ -44,6 +44,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.junit.platform:junit-platform-suite:1.12.0'
     testImplementation 'org.apiguardian:apiguardian-api:1.1.2'
+
+    testImplementation 'org.mockito:mockito-core:5.23.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
 }
 
 tasks.register('compile') {
